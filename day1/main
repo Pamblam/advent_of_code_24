@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+const fs = require('fs');
+
+(async function main(){
+	const input = fs.readFileSync('input.txt', 'utf-8')
+		.split("\n")
+		.reduce((a,c)=>!c.trim()?a:(c=c.split(/\s+/),a[0].push(+c[0]),a[1].push(+c[1]),a),[[],[]])
+		.map(a=>a.sort());
+
+	let diff = input[0].map((v,i)=>Math.abs(v-input[1][i])).reduce((a,c)=>a+c,0);
+	console.log(diff);
+})();
