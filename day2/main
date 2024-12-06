@@ -1,0 +1,51 @@
+#!/usr/bin/env node
+const fs = require('fs');
+
+(async function main(){
+
+	const input = fs.readFileSync('input.txt', 'utf-8')
+		.trim()
+		.split("\n")
+		.map(r=>r.split(/\s/).map(n=>+n))
+
+	// const input = [
+	// 	[7, 6, 4, 2, 1],
+	// 	[1, 2, 7, 8, 9],
+	// 	[9, 7, 6, 2, 1],
+	// 	[1, 3, 2, 4, 5],
+	// 	[8, 6, 4, 4, 1],
+	// 	[1, 3, 6, 7, 9]
+	// ];
+
+
+	const part1 = input.filter(isSequenceSafe).length;
+
+	console.log(part1);
+
+	const part2 = input.filter(seq=>{
+		if(isSequenceSafe(seq)) return true;
+		for(let i=0; i<seq.length; i++){
+			let s = seq.slice();
+			s.splice(i,1);
+			if(isSequenceSafe(s)) return true;
+		}
+		return false;
+	}).length;
+
+	console.log(part2);
+
+	function isSequenceSafe(seq){
+		return false !== seq.reduce((a,c)=>{
+			if(a === false || !c) return false;
+			let [lastnum, increasing] = a;
+			if(null === lastnum) return [c, null];
+			let isIncreasing = c < lastnum;
+			if(increasing === null) increasing = isIncreasing;
+			if(increasing != isIncreasing) return false;
+			let difference = Math.abs(c - lastnum);
+			if(difference < 1 || difference > 3) return false;
+			return [c, increasing];
+		},[null,null]);
+	}
+
+})();
