@@ -1,0 +1,62 @@
+#!/usr/bin/env node
+const fs = require('fs');
+
+(async function main(){
+
+	let [rules,input] = fs.readFileSync('input.txt', 'utf-8').trim().split("\n\n").map(s=>s.split("\n"));
+	input = input.map(l=>l.split(',').map(i=>+i));
+	rules = rules.map(l=>l.split('|').map(i=>+i));
+
+	const isInOrder = pages => {
+		for(let i=0; i<rules.length; i++){
+			let [page1, page2] = rules[i];
+			if(!pages.includes(page1) || !pages.includes(page2)) continue;
+			if(pages.indexOf(page1) > pages.indexOf(page2)) return false;
+		}
+		return true;
+	};
+
+	let output1 = input.filter(isInOrder);
+
+	// add all the middle numbers
+	output1 = output1.reduce((a,c) => a + c[Math.floor(c.length/2)], 0);
+
+	console.log(output1);
+
+	const rearrangePages = pages=>{
+		let wasRearranged = false;
+		for(let i=0; i<rules.length; i++){
+			let [page1, page2] = rules[i];
+			if(!pages.includes(page1) || !pages.includes(page2)) continue;
+			let p1_pos = pages.indexOf(page1);
+			let p2_pos = pages.indexOf(page2);
+			if(p1_pos > p2_pos){
+				// remove the second page number
+				pages.splice(p2_pos, 1);
+				// put the second number in immediately after the first
+				pages.splice(p1_pos+1,0,page2);
+				wasRearranged = true;
+			}
+		}
+		return wasRearranged ? pages : false;
+	};
+
+	let output2 = input.map(pages=>{
+		if(isInOrder(pages)) return false;
+		let i=0;
+		while(1){
+			pages = rearrangePages(pages);
+			if(isInOrder(pages)) return pages;
+
+			i++; // i know, this is lazy
+			if(i>100) break;
+		}
+		return false;
+	}).filter(m=>!!m);
+
+	// add all the middle numbers
+	output2 = output2.reduce((a,c) => a + c[Math.floor(c.length/2)], 0);
+
+	console.log(output2);
+
+})();

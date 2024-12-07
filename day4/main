@@ -4,64 +4,160 @@ const fs = require('fs');
 (async function main(){
 
 	const input = fs.readFileSync('input.txt', 'utf-8').trim().split("\n").map(l=>l.split(''));
-	const chars = 'XMAS'.split('');
 
-	// Get the number of matches present at the given position
-	const getMatchCount = (starting_x, starting_y) => {
+	function part1(){
+		const chars = 'XMAS'.split('');
 
-		// the number of matches at the given position
-		let count = 0;
-
-		// either incrementing (1), not changing (0), or decrementing (-1)
-		let dir = [1,0,-1]; 
-
-		// every possible combination of vertical and horizontal movement
-		for(const h of dir){
-			for(const v of dir){
-
-				let isMatch = true;
-
-				// iterate over every char
-				for(let i=0; i<chars.length; i++){
-					let char = chars[i];
-
-					// the first iteration always starts at the specified position
-					let x = starting_x;
-					let y = starting_y;
-
-					// each consecutive char is expected at the given position
-					if(i>0){
-						x += (i*v);
-						y += (i*h);
+		// Get the number of matches present at the given position
+		const getMatchCount = (starting_x, starting_y) => {
+	
+			// the number of matches at the given position
+			let count = 0;
+	
+			// either incrementing (1), not changing (0), or decrementing (-1)
+			let dir = [1,0,-1]; 
+	
+			// every possible combination of vertical and horizontal movement
+			for(const h of dir){
+				for(const v of dir){
+	
+					let isMatch = true;
+	
+					// iterate over every char
+					for(let i=0; i<chars.length; i++){
+						let char = chars[i];
+	
+						// the first iteration always starts at the specified position
+						let x = starting_x;
+						let y = starting_y;
+	
+						// each consecutive char is expected at the given position
+						if(i>0){
+							x += (i*v);
+							y += (i*h);
+						}
+	
+						// If the expected char is not at the position, it is not a match.
+						if(!input[y] || !input[y][x] || char != input[y][x]){
+							isMatch = false; 
+							break;
+						}
 					}
-
-					// If the expected char is not at the position, it is not a match.
-					if(!input[y] || !input[y][x] || char != input[y][x]){
-						isMatch = false; 
-						break;
-					}
+	
+					// If we matched the whole word return true
+					if(isMatch) count++;
 				}
+			}
+	
+			return count;
+		};
+	
+		let count = 0;
+	
+		// iterate over the entire grid and determine if each starting position is 
+		for(let y=0; y<input.length; y++){
+			for(let x=0; x<input[y].length; x++){
+	
+				// There could be multiple matches at this position, so we must return the number
+				count += getMatchCount(x,y);
+	
+			}
+		}
+	
+		console.log(count);
+	}
 
-				// If we matched the whole word return true
-				if(isMatch) count++;
+	function part2(){
+		const chars = 'MAS'.split('');
+
+		// Modified from part 1...
+		// Get the position of the second letter for every match
+		const getMatchesSecondChar = (starting_x, starting_y) => {
+			
+			// the number of matches at the given position
+			let matches = [];
+
+			// either incrementing (1), not changing (0), or decrementing (-1)
+			let dir = [1,0,-1]; 
+
+			// every possible combination of vertical and horizontal movement
+			for(const h of dir){
+				for(const v of dir){
+
+					let second_char = null;
+					let isMatch = true;
+
+					// iterate over every char
+					for(let i=0; i<chars.length; i++){
+						let char = chars[i];
+
+						// the first iteration always starts at the specified position
+						let x = starting_x;
+						let y = starting_y;
+
+						// each consecutive char is expected at the given position
+						if(i>0){
+							x += (i*v);
+							y += (i*h);
+						}
+
+						if(i==1){
+							second_char = [x,y];
+						}
+
+						// If the expected char is not at the position, it is not a match.
+						if(!input[y] || !input[y][x] || char != input[y][x]){
+							isMatch = false; 
+							break;
+						}
+					}
+
+					// If we matched the whole word return true
+					
+					if(isMatch){
+						matches.push(second_char);
+					} 
+				}
+			}
+
+			return matches;
+		};
+		
+		let matches = {};
+
+		// iterate over the entire grid and determine if each starting position is 
+		for(let y=0; y<input.length; y++){
+			for(let x=0; x<input[y].length; x++){
+
+				// There could be multiple matches at this position, so we must return the number
+				getMatchesSecondChar(x,y).forEach(pos=>{
+					let key = pos.join(',');
+					if(!matches[key]) matches[key] = [];
+					matches[key].push([x,y]);
+				});
+
+				
 			}
 		}
 
-		return count;
-	};
+		matches = Object.keys(matches).filter(m=>{
+			// an array of matches that share the same center point
+			let mts = matches[m];
+			// compare each one and see if they make an x shape
+			for(let i=0; i<mts.length; i++){
+				for(n=i; n<mts.length; n++){
+					let x1 = mts[i];
+					let x2 = mts[n];
+					if(x1[0] === x2[0] && Math.abs(x1[1] - x2[1]) === 2) return true;
+					if(x1[1] === x2[1] && Math.abs(x1[0] - x2[0]) === 2) return true;
+				}
+			}
+			return false;
+		});
 
-	let count = 0;
-
-	// iterate over the entire grid and determine if each starting position is 
-	for(let y=0; y<input.length; y++){
-		for(let x=0; x<input[y].length; x++){
-
-			// There could be multiple matches at this position, so we must return the number
-			count += getMatchCount(x,y);
-
-		}
+		console.log(matches.length);
 	}
 
-	console.log(count);
+	part2();
 
 })();
