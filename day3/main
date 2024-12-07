@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+const fs = require('fs');
+
+(async function main(){
+
+	const input = fs.readFileSync('input.txt', 'utf-8').trim();
+
+	let part1_sum = 0;
+	const matches1 = input.matchAll(/mul\((\d+),(\d+)\)/g);
+	for (const match of matches1){
+		part1_sum += parseInt(match[1])*parseInt(match[2]);
+	}
+
+	console.log(part1_sum);
+
+	let part2_sum = 0;
+	let enabled = true;
+	const matches2 = input.matchAll(/mul\((\d+),(\d+)\)|do\(\)|don't\(\)/g);
+	for (const match of matches2){
+		switch(match[0]){
+			case 'do()':
+				enabled = true;
+				break;
+			case `don't()`:
+				enabled = false;
+				break;
+			default:
+				if(enabled){
+					part2_sum += parseInt(match[1])*parseInt(match[2]);
+				}
+		}
+	}
+
+	console.log(part2_sum);
+
+})();
